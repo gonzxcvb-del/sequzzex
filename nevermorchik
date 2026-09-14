@@ -1,0 +1,196 @@
+-- =====================================================
+-- PURE PRO // FORCE HIGHLIGHT CHAMS & AIM
+-- =====================================================
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local Camera = Workspace.CurrentCamera
+
+local LocalPlayer = Players.LocalPlayer
+if not LocalPlayer then LocalPlayer = Players.LocalPlayer end
+
+-- Очистка старого интерфейса
+for _, v in ipairs(CoreGui:GetChildren()) do 
+    if v.Name == "PurePro_ForceHub" then v:Destroy() end 
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PurePro_ForceHub"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = CoreGui end)
+if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+-- Менюшка
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 320, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -160, 0.3, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(50, 205, 50)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 36)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "PURE PRO // FORCE HIGHLIGHT"
+Title.TextColor3 = Color3.fromRGB(50, 205, 50)
+Title.TextSize, Title.Font = 11, Enum.Font.Code
+Title.Parent = MainFrame
+
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, -20, 1, -45)
+Container.Position = UDim2.new(0, 10, 0, 40)
+Container.BackgroundTransparency = 1
+Container.Parent = MainFrame
+
+local UIList = Instance.new("UIListLayout")
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 10)
+UIList.Parent = Container
+
+local function createToggle(text, callback)
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(1, 0, 0, 42)
+    Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+    Frame.BorderSizePixel = 0
+    Frame.Parent = Container
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Frame
+    
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.Position = UDim2.new(0, 12, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(220, 220, 230)
+    Label.TextSize, Label.Font = 11, Enum.Font.Code
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Frame
+    
+    local Switch = Instance.new("TextButton")
+    Switch.Size = UDim2.new(0, 42, 0, 22)
+    Switch.Position = UDim2.new(1, -50, 0.5, -11)
+    Switch.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    Switch.Text = ""
+    Switch.Parent = Frame
+    
+    local SCorner = Instance.new("UICorner")
+    SCorner.CornerRadius = UDim.new(1, 0)
+    SCorner.Parent = Switch
+    
+    local Circle = Instance.new("Frame")
+    Circle.Size = UDim2.new(0, 16, 0, 16)
+    Circle.Position = UDim2.new(0, 3, 0.5, -8)
+    Circle.BackgroundColor3 = Color3.fromRGB(150, 150, 170)
+    Circle.Parent = Switch
+    
+    local CCorn = Instance.new("UICorner")
+    CCorn.CornerRadius = UDim.new(1, 0)
+    CCorn.Parent = Circle
+    
+    local active = false
+    Switch.MouseButton1Click:Connect(function()
+        active = not active
+        if active then
+            Switch.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+            Circle.Position = UDim2.new(1, -19, 0.5, -8)
+            Circle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+        else
+            Switch.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+            Circle.Position = UDim2.new(0, 3, 0.5, -8)
+            Circle.BackgroundColor3 = Color3.fromRGB(150, 150, 170)
+        end
+        callback(active)
+    end)
+end
+
+-- 1. СУПЕР-ЧАМСЫ ЧЕРЕЗ HIGHLIGHT
+local chamsActive = false
+createToggle("Force Highlight Chams", function(state) 
+    chamsActive = state 
+end)
+
+RunService.RenderStepped:Connect(function()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local char = p.Character
+            local hl = char:FindFirstChild("ForceHighlightChams")
+            
+            if chamsActive then
+                if not hl then
+                    hl = Instance.new("Highlight")
+                    hl.Name = "ForceHighlightChams"
+                    hl.Adornee = char
+                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    hl.Parent = char
+                end
+                
+                if p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team then
+                    hl.FillColor = Color3.fromRGB(50, 150, 255)
+                else
+                    hl.FillColor = Color3.fromRGB(255, 30, 30)
+                end
+                hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                hl.FillTransparency = 0.3
+                hl.OutlineTransparency = 0
+            else
+                if hl then hl:Destroy() end
+            end
+        end
+    end
+end)
+
+-- 2. КЛАССИЧЕСКИЙ АИМ (На голову)
+local aimActive = false
+createToggle("Head Aimbot (Классический)", function(state) 
+    aimActive = state 
+end)
+
+RunService.RenderStepped:Connect(function()
+    if not aimActive or not Camera then return end
+
+    local myChar = LocalPlayer.Character
+    local myRoot = myChar and (myChar:FindFirstChild("HumanoidRootPart") or myChar:FindFirstChild("Head"))
+    if not myRoot then return end
+
+    local closestHead = nil
+    local shortestDist = math.huge
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local char = p.Character
+            local head = char:FindFirstChild("Head")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            
+            if head and hum and hum.Health > 0 then
+                local dist = (myRoot.Position - head.Position).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    local velocity = char:FindFirstChild("HumanoidRootPart") and char.HumanoidRootPart.Velocity or Vector3.new(0,0,0)
+                    closestHead = head.Position + (velocity * 0.08)
+                end
+            end
+        end
+    end
+
+    if closestHead then
+        local currentCF = Camera.CFrame
+        local targetCF = CFrame.new(currentCF.Position, closestHead)
+        Camera.CFrame = currentCF:Lerp(targetCF, 0.85)
+    end
+end)

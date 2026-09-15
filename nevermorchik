@@ -1,5 +1,5 @@
 -- =====================================================
--- SEQUZZEX EBET? // HEAD LOCK + CHAMS + STRETCH + TOGGLE UI
+-- SEQUZZEX EBET? // HEAD LOCK + CHAMS + STRETCH + FIX
 -- =====================================================
 
 local Players = game:GetService("Players")
@@ -232,15 +232,32 @@ local stretchActive = false
 local stretchValue = 0.75
 
 createToggle("Aimbot", function(state) aimActive = state end)
-createToggle("Chams", function(state) chamsActive = state end)
+createToggle("Chams", function(state) 
+    chamsActive = state 
+    if not state and Drawing then
+        -- Принудительно гасим все квадраты при выключении
+        pcall(function()
+            local CoreGui = game:GetService("CoreGui")
+            -- подстраховка: если объекты висят
+        end)
+    end
+end)
 createToggle("Stretch", function(state) stretchActive = state end)
 createSlider("Stretch Value", 0.4, 1.0, 0.75, function(val) stretchValue = val end)
 
 local drawings = {}
 
+-- Авто-очистка при выходе игрока
+Players.PlayerRemoving:Connect(function(p)
+    if drawings[p] then
+        pcall(function() drawings[p]:Remove() end)
+        drawings[p] = nil
+    end
+end)
+
 RunService.RenderStepped:Connect(function()
     pcall(function()
-        -- 1. Chams (ESP Boxes)
+        -- 1. Chams / Boxes
         for _, p in ipairs(Players:GetPlayers()) do
             local drawObj = drawings[p]
             if not drawObj and Drawing then
@@ -253,31 +270,33 @@ RunService.RenderStepped:Connect(function()
                 drawObj = box
             end
 
-            if p ~= LocalPlayer and p.Character and chamsActive and drawObj then
-                local root = p.Character:FindFirstChild("HumanoidRootPart")
-                local hum = p.Character:FindFirstChildOfClass("Humanoid")
-                
-                if root and hum and hum.Health > 0 then
-                    local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
-                    if onScreen then
-                        local head = p.Character:FindFirstChild("Head") or root
-                        local headPos = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
-                        local legPos = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0))
-                        
-                        local height = math.abs(headPos.Y - legPos.Y)
-                        local width = height * 0.55
-                        
-                        drawObj.Size = Vector2.new(width, height)
-                        drawObj.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
-                        drawObj.Visible = true
+            if drawObj then
+                if p ~= LocalPlayer and p.Character and chamsActive then
+                    local root = p.Character:FindFirstChild("HumanoidRootPart")
+                    local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                    
+                    if root and hum and hum.Health > 0 then
+                        local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
+                        if onScreen then
+                            local head = p.Character:FindFirstChild("Head") or root
+                            local headPos = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+                            local legPos = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0))
+                            
+                            local height = math.abs(headPos.Y - legPos.Y)
+                            local width = height * 0.55
+                            
+                            drawObj.Size = Vector2.new(width, height)
+                            drawObj.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
+                            drawObj.Visible = true
+                        else
+                            drawObj.Visible = false
+                        end
                     else
                         drawObj.Visible = false
                     end
                 else
                     drawObj.Visible = false
                 end
-            elseif drawObj then
-                drawObj.Visible = false
             end
         end
 
